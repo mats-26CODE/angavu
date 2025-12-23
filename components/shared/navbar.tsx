@@ -31,7 +31,14 @@ const NavBar = () => {
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = [{ label: t("nav.dashboard"), href: "/dashboard" }];
+  const navLinks = [
+    { label: t("nav.howItWorks"), href: "#how-it-works" },
+    { label: t("nav.features"), href: "#features" },
+    { label: t("nav.pricing"), href: "#pricing" },
+    { label: t("nav.faq"), href: "#faq" },
+  ];
+
+  const dashboardLinks = [{ label: t("nav.dashboard"), href: "/dashboard" }];
 
   const handleLinkClick = () => {
     setMobileMenuOpen(false);
@@ -114,12 +121,13 @@ const NavBar = () => {
           >
             {t("nav.login")}
           </Link>
-          <Link
-            href="/sign-up"
-            className="ml-2 px-6 py-2 border border-primary/40 rounded-full bg-primary/40 text-primary-foreground text-sm font-medium hover:bg-primary/10"
+          <Button
+            asChild
+            size="sm"
+            className="ml-2 rounded-full text-sm font-medium hover:bg-muted"
           >
-            {t("nav.signup")}
-          </Link>
+            <Link href="/sign-up">{t("nav.signup")}</Link>
+          </Button>
 
           {/* Theme Toggle */}
           <Button
@@ -178,20 +186,31 @@ const NavBar = () => {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <div className="px-6 pb-6 flex flex-col gap-4">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={handleLinkClick}
-                    className={`text-base transition-colors py-2 ${
-                      pathname === link.href
-                        ? "text-primary font-semibold"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {pathname === "/"
+                  ? navLinks.map((link) => (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        onClick={handleLinkClick}
+                        className="text-base text-muted-foreground hover:text-foreground transition-colors py-2"
+                      >
+                        {link.label}
+                      </a>
+                    ))
+                  : dashboardLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        onClick={handleLinkClick}
+                        className={`text-base transition-colors py-2 ${
+                          pathname === link.href
+                            ? "text-primary font-semibold"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
                 <div className="border-t pt-4 mt-4 space-y-4">
                   {/* Theme Toggle - Mobile Menu */}
                   <div className="flex items-center justify-between">
