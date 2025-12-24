@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUser, useLogout } from "@/hooks/use-user";
 import { useLanguage, translations } from "@/lib/stores/preferences-store";
 import { useTranslation } from "@/hooks/use-translation";
 import { useState } from "react";
@@ -20,12 +21,20 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, Sun, Moon, Monitor } from "lucide-react";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Menu, Sun, Moon, Monitor, LogOut } from "lucide-react";
 import Logo from "./logo";
 import { useTheme } from "@/lib/stores/preferences-store";
+import { ProfileAvatar } from "./profile-avatar";
 
 const NavBar = () => {
   const pathname = usePathname();
+  const { user } = useUser();
+  const logout = useLogout();
   const { language, setLanguage } = useLanguage();
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
@@ -115,19 +124,76 @@ const NavBar = () => {
               ))}
             </SelectContent>
           </Select>
-          <Link
-            href="/login"
-            className="ml-2 px-6 py-2 border border-primary/10 rounded-full text-sm font-medium hover:bg-muted"
-          >
-            {t("nav.login")}
-          </Link>
-          <Button
-            asChild
-            size="sm"
-            className="ml-2 rounded-full text-sm font-medium hover:bg-muted"
-          >
-            <Link href="/sign-up">{t("nav.signup")}</Link>
-          </Button>
+          {user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="ml-2 px-6 py-2 border border-primary/10 rounded-full text-sm font-medium hover:bg-muted"
+              >
+                {t("nav.dashboard")}
+              </Link>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="focus:outline-none focus:ring-2 focus:ring-primary rounded-full cursor-pointer">
+                    <ProfileAvatar
+                      name={
+                        user.user_metadata?.name ||
+                        user.email ||
+                        user.phone ||
+                        undefined
+                      }
+                      image={user.user_metadata?.avatar_url}
+                      size="default"
+                    />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64" align="end">
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold">
+                        {user.user_metadata?.name ||
+                          user.email ||
+                          user.phone ||
+                          "User"}
+                      </p>
+                      {(user.email || user.phone) && (
+                        <p className="text-xs text-muted-foreground">
+                          {user.email || user.phone}
+                        </p>
+                      )}
+                    </div>
+                    <div className="border-t pt-2 flex flex-col gap-1">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-sm font-light"
+                        size="sm"
+                        onClick={logout}
+                      >
+                        <LogOut className="mr-1 size-4" />
+                        {t("nav.logout")}
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="ml-2 px-6 py-2 border border-primary/10 rounded-full text-sm font-medium hover:bg-muted"
+              >
+                {t("nav.login")}
+              </Link>
+              <Button
+                asChild
+                size="sm"
+                className="ml-2 rounded-full text-sm font-medium hover:bg-muted"
+              >
+                <Link href="/sign-up">{t("nav.signup")}</Link>
+              </Button>
+            </>
+          )}
 
           {/* Theme Toggle */}
           <Button
@@ -225,22 +291,71 @@ const NavBar = () => {
                       {getThemeIcon()}
                     </Button>
                   </div>
-                  <div className="flex flex-col gap-3">
-                    <Link
-                      href="/login"
-                      onClick={handleLinkClick}
-                      className="w-full px-4 py-2 border border-primary/10 rounded-full text-xs 2xl:text-base font-normal hover:bg-muted text-center"
-                    >
-                      {t("nav.login")}
-                    </Link>
-                    <Link
-                      href="/sign-up"
-                      onClick={handleLinkClick}
-                      className="w-full px-4 py-2 border border-primary/40 rounded-full bg-primary/40 text-primary-foreground text-xs 2xl:text-base font-normal hover:bg-primary/10 text-center"
-                    >
-                      {t("nav.signup")}
-                    </Link>
-                  </div>
+                  {user ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3 pb-2">
+                        <ProfileAvatar
+                          name={
+                            user.user_metadata?.name ||
+                            user.email ||
+                            user.phone ||
+                            undefined
+                          }
+                          image={user.user_metadata?.avatar_url}
+                          size="lg"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">
+                            {user.user_metadata?.name ||
+                              user.email ||
+                              user.phone ||
+                              "User"}
+                          </p>
+                          {(user.email || user.phone) && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {user.email || user.phone}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Link
+                        href="/dashboard"
+                        onClick={handleLinkClick}
+                        className="w-full px-4 py-2 border border-primary/10 rounded-full text-xs 2xl:text-base font-normal hover:bg-muted text-center"
+                      >
+                        {t("nav.dashboard")}
+                      </Link>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          logout();
+                          handleLinkClick();
+                        }}
+                        className="w-full"
+                      >
+                        <LogOut className="mr-2 size-4" />
+                        {t("nav.logout")}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      <Link
+                        href="/login"
+                        onClick={handleLinkClick}
+                        className="w-full px-4 py-2 border border-primary/10 rounded-full text-xs 2xl:text-base font-normal hover:bg-muted text-center"
+                      >
+                        {t("nav.login")}
+                      </Link>
+                      <Link
+                        href="/sign-up"
+                        onClick={handleLinkClick}
+                        className="w-full px-4 py-2 border border-primary/40 rounded-full bg-primary/40 text-primary-foreground text-xs 2xl:text-base font-normal hover:bg-primary/10 text-center"
+                      >
+                        {t("nav.signup")}
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
             </SheetContent>

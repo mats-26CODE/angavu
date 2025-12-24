@@ -1,32 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import NavBar from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
-import { createClient } from "@/lib/supabase/client";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push("/login");
-      }
-    };
-
-    checkAuth();
-  }, [router]);
+  // Authentication is handled by middleware (lib/supabase/proxy.ts)
+  // which redirects unauthenticated users to /login
+  // The SessionProvider in the root layout syncs the Zustand store
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
